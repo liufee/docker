@@ -1,0 +1,14 @@
+#!/bin/sh
+# chkconfig: 2345 64 36
+# description: Nginx web server.
+case $1 in
+	restart):
+		/usr/local/nginx/sbin/nginx -s reload
+		;;
+	stop):
+		/usr/local/nginx/sbin/nginx -s stop
+		;;
+	*):
+		/usr/local/nginx/sbin/nginx
+		 ;;
+esac
