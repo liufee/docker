@@ -2,7 +2,7 @@ FROM centos:latest
 MAINTAINER liufee job@feehi.com
 
 
-#修改dns地址，安装基础工具
+#修改dns地址
 RUN echo nameserver 114.114.114.114 > /etc/resolv.conf
 RUN yum install vim wget git net-tools -y
 
@@ -55,6 +55,17 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
 RUN make && make install
 RUN useradd nginx
 RUN mkdir -p -m 777 /tmp/nginx
+RUN sed -i "64a         }" /etc/nginx/nginx.conf
+RUN sed -i "64a             include        fastcgi_params;" /etc/nginx/nginx.conf
+RUN sed -i "64a             fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;" /etc/nginx/nginx.conf
+RUN sed -i "64a             fastcgi_index  index.php;" /etc/nginx/nginx.conf
+RUN sed -i "64a             fastcgi_pass   127.0.0.1:9000;" /etc/nginx/nginx.conf
+RUN sed -i "64a             root           html;" /etc/nginx/nginx.conf
+RUN sed -i "64a             location ~ \.php$ {" /etc/nginx/nginx.conf
+
+RUN echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php
+RUN sed -i '45s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
+
 
 
 #配置supervisor
@@ -72,6 +83,7 @@ RUN echo command=/usr/local/php/sbin/php-fpm >> /etc/supervisord.conf
 
 
 RUN source /etc/profile
+
 
 EXPOSE 80
 
