@@ -120,7 +120,7 @@ RUN make \
 
 
 #安装php redis扩展
-RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" > /etc/php/php.ini
+RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/php/php.ini
 
 
 #配置supervisor
