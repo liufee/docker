@@ -35,6 +35,7 @@ RUN yum install openssh-server -y
 RUN echo PermitRootLogin  yes >> /etc/ssh/sshd_config\
     && echo PasswordAuthentication yes >> /etc/ssh/sshd_config\
     && echo RSAAuthentication yes >> etc/ssh/sshd_config\
+    && sed -i "129s/UseDNS yes/UseDNS no/g" /etc/ssh/sshd_config\
     && echo "root:$ROOT_PASSWORD" | chpasswd\
     && ssh-keygen -t dsa -f /etc/ssh/ssh_host_rsa_key\
     && ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key\
@@ -105,7 +106,7 @@ RUN make \
     && cp ./redis.conf /etc/redis.conf \
     && sed -i '61s/127.0.0.1/0.0.0.0/g' /etc/redis.conf \
     && sed -i '128s/no/yes/g' /etc/redis.conf \
-    && sed -i '480s/# requirepass foobared/requirepass ${REDIS_PASS}/g' /etc/redis.conf \
+    && sed -i "480s/# requirepass foobared/requirepass ${REDIS_PASS}/g" /etc/redis.conf \
     && echo -e "# description: Redis web server. \n\
          case \$1 in \n\
             restart): \n\
