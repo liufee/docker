@@ -10,6 +10,8 @@ ENV PHP_VER=7.1.7
 ENV NGINX_VER=1.12.0
 #redis版本
 ENV REDIS_VER=3.2.9
+#redis密码
+ENV REDIS_PASS=123456
 
 
 #修改dns地址
@@ -103,7 +105,7 @@ RUN make \
     && cp ./redis.conf /etc/redis.conf \
     && sed -i '61s/127.0.0.1/0.0.0.0/g' /etc/redis.conf \
     && sed -i '128s/no/yes/g' /etc/redis.conf \
-    && sed -i '480s/# requirepass foobared/requirepass 123456/g' /etc/redis.conf \
+    && sed -i '480s/# requirepass foobared/requirepass ${REDIS_PASS}/g' /etc/redis.conf \
     && echo -e "# description: Redis web server. \n\
          case \$1 in \n\
             restart): \n\
