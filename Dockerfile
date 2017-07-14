@@ -55,6 +55,7 @@ RUN ./configure --prefix=/usr/local/php --with-config-file-path=/etc/php --enabl
     && cp /usr/src/php/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm && chmod +x /etc/init.d/php-fpm
 WORKDIR /usr/local/php/etc
 RUN cp php-fpm.conf.default php-fpm.conf \
+    && sed -i "/;daemonize = yes/s/;daemonize = yes/daemonize = no/g" php-fpm.conf \
     && cp ./php-fpm.d/www.conf.default ./php-fpm.d/www.conf \
     && sed -i "52a PATH=/usr/local/php/bin:$PATH" /etc/profile \
     && sed -i "52a PATH=/etc/init.d:$PATH" /etc/profile
@@ -89,8 +90,34 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
      && sed -i "64a             fastcgi_pass   127.0.0.1:9000;" /etc/nginx/nginx.conf \
      && sed -i "64a             root           html;" /etc/nginx/nginx.conf \
      && sed -i "64a             location ~ \.php$ {" /etc/nginx/nginx.conf \
+     && sed -i "4s/ /daemon off/" /etc/nginx/nginx.conf \
      && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php \
      && sed -i '45s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
+
+
+#安装mysql
+RUN curl -o mysql-server.rpm https://repo.mysql.com//mysql57-community-release-el7-11.noarch.rpm
+RUN rpm -ivh mysql-server.rpm
+RUN /usr/bin/yum install mysql-community-server -y
+VOLUME ['/mysql']
+RUN sed -i "/datadir=/s/\/var\/lib\/mysql/\/mysql/g" /etc/my.cnf && echo "user=root" >> /etc/my.cnf
+RUN echo -e "#!/bin/sh \n\
+    files=\`ls /mysql\` \n\
+    if [ -z \"\$files\" ];then \n\
+        if [ ! \${MYSQL_PASSWORD} ]; then \n\
+            MYSQL_PASSWORD='123456' \n\
+        fi \n\
+        /usr/sbin/mysqld --initialize \n\
+        MYSQLOLDPASSWORD=\`awk -F \"localhost: \" '/A temporary/{print \$2}' /var/log/mysqld.log\` \n\
+        /usr/sbin/mysqld & \n\
+        echo -e \"[client] \\\n  password=\"\${MYSQLOLDPASSWORD}\" \\\n user=root\" > ~/.my.cnf \n\
+        sleep 5s \n\
+        /usr/bin/mysql --connect-expired-password -e \"set password=password('\$MYSQL_PASSWORD');update mysql.user set host='%' where user='root' && host='localhost';flush privileges;\" \n\
+        echo -e \"[client] \\\n  password=\"\${MYSQL_PASSWORD}\" \\\n user=root\" > ~/.my.cnf \n\
+    else \n\
+        /usr/sbin/mysqld \n\
+    fi" > /mysql.sh
+RUN chmod +x /mysql.sh
 
 
 #安装redis server
@@ -129,12 +156,19 @@ RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/p
 #配置supervisor
 RUN echo [supervisord] > /etc/supervisord.conf \
     && echo nodaemon=true >> /etc/supervisord.conf \
+    \
     && echo [program:sshd] >> /etc/supervisord.conf \
     && echo command=/usr/sbin/sshd -D >> /etc/supervisord.conf \
+    \
     && echo [program:nginx] >> /etc/supervisord.conf \
     && echo command=/etc/init.d/nginx start >> /etc/supervisord.conf \
+    \
     && echo [program:php-fpm] >> /etc/supervisord.conf \
     && echo command=/etc/init.d/php-fpm start >> /etc/supervisord.conf \
+    \
+    && echo [program:mysqld] >> /etc/supervisord.conf \
+    && echo command=/bin/sh /mysql.sh >> /etc/supervisord.conf \
+    \
     && echo [program:redis] >> /etc/supervisord.conf \
     && echo command=/usr/local/redis/bin/redis-server /etc/redis.conf >> /etc/supervisord.conf
 
@@ -142,7 +176,7 @@ RUN echo [supervisord] > /etc/supervisord.conf \
 RUN source /etc/profile
 
 
-EXPOSE 80 6379
+EXPOSE 80 3306 6379
 
 
 CMD ["/usr/bin/supervisord"]
