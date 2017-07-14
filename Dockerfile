@@ -90,7 +90,7 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
      && sed -i "64a             fastcgi_pass   127.0.0.1:9000;" /etc/nginx/nginx.conf \
      && sed -i "64a             root           html;" /etc/nginx/nginx.conf \
      && sed -i "64a             location ~ \.php$ {" /etc/nginx/nginx.conf \
-     && sed -i "4s/ /daemon off/" /etc/nginx/nginx.conf \
+     && sed -i "3a daemon off;" /etc/nginx/nginx.conf \
      && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php \
      && sed -i '45s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
 
