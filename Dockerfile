@@ -30,7 +30,7 @@ RUN yum install vim wget git net-tools -y
 RUN  yum install python-setuptools -y && easy_install supervisor
 
 
-#安装openssh server，设置root密码为123456
+#安装openssh server，设置root密码为变量ROOT_PASSWORD
 RUN yum install openssh-server -y
 RUN echo PermitRootLogin  yes >> /etc/ssh/sshd_config\
     && echo PasswordAuthentication yes >> /etc/ssh/sshd_config\
@@ -48,7 +48,7 @@ RUN yum install epel-release -y && yum update -y\
 WORKDIR /usr/src
 RUN wget -O php.tar.gz "http://php.net/get/php-${PHP_VER}.tar.gz/from/this/mirror" && mkdir php && tar -xzvf php.tar.gz -C ./php --strip-components 1
 WORKDIR php
-RUN ./configure --prefix=/usr/local/php --with-config-file-path=/etc/php --enable-soap --enable-mbstring=all --enable-sockets --enable-fpm --with-gd --with-freetype-dir=/usr/include/freetype2/freetype --with-jpeg-dir=/usr/lib64 --with-zlib --with-iconv --enable-libxml --enable-xml  --enable-intl --enable-zip --with-curl --with-mcrypt --with-openssl --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd \
+RUN ./configure --prefix=/usr/local/php --with-config-file-path=/etc/php --enable-soap --enable-mbstring=all --enable-sockets --enable-fpm --with-gd --with-freetype-dir=/usr/include/freetype2/freetype --with-jpeg-dir=/usr/lib64 --with-zlib --with-iconv --enable-libxml --enable-xml  --enable-intl --enable-zip --enable-pcntl --enable-maintainer-zts --with-curl --with-mcrypt --with-openssl --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd \
     && make && make install \
     && mkdir /etc/php \
     && cp /usr/src/php/php.ini-development /etc/php/php.ini \
@@ -153,6 +153,10 @@ RUN make \
 RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/php/php.ini
 
 
+#安装必要的服务
+RUN yum install vixie-cron crontabs -y
+
+
 #配置supervisor
 RUN echo [supervisord] > /etc/supervisord.conf \
     && echo nodaemon=true >> /etc/supervisord.conf \
@@ -170,7 +174,10 @@ RUN echo [supervisord] > /etc/supervisord.conf \
     && echo command=/bin/sh /mysql.sh >> /etc/supervisord.conf \
     \
     && echo [program:redis] >> /etc/supervisord.conf \
-    && echo command=/usr/local/redis/bin/redis-server /etc/redis.conf >> /etc/supervisord.conf
+    && echo command=/usr/local/redis/bin/redis-server /etc/redis.conf >> /etc/supervisord.conf \
+    \
+    && echo [program:crond] >> /etc/supervisord.conf \
+    && echo command=/usr/sbin/crond -n >> /etc/supervisord.conf
 
 
 RUN source /etc/profile
