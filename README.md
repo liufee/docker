@@ -5,7 +5,11 @@ LNMP Dockerfile
 
 包含php，nginx，reids，oepnssh server，crond等服务。修改顶部的PHP_VER, NGINX_VER, REDIS_VER可构建任意版本的php，nginx，redis版本镜像。
 
-快速获取容: ```bash docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi ```
+快速获取容器
+------------------------
+```bash 
+docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi 
+```
 
 简介
 ------------------------
@@ -36,10 +40,10 @@ P.S 如果某一步骤失败, 再来一次。(因为你懂的原因，pecl.php.n
 
 运行容器
 -------------------
+
 ```bash
   $ docker run -h feehi -p 80:80 -p22:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v $PWD/etc/nginx:/etc/nginx -v $PWD/data/mysql:/mysql -v $PWD/data/log:/var/log -v /e:/work name/subname
 ```
-
  P.S 
  
  1. $PWD为当前运行docker run的目录，可传入绝对地址。
