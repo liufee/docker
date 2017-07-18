@@ -92,7 +92,7 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
      && sed -i "64a             location ~ \.php$ {" /etc/nginx/nginx.conf \
      && sed -i "3a daemon off;" /etc/nginx/nginx.conf \
      && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php \
-     && sed -i '45s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
+     && sed -i '46s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
 
 
 #安装mysql
@@ -154,7 +154,8 @@ RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/p
 
 
 #安装必要的服务
-RUN yum install vixie-cron crontabs -y
+RUN yum install vixie-cron crontabs -y \
+     && cd /usr/src && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer && rm -rf composer-setup.php
 
 
 #配置supervisor
