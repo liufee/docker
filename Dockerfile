@@ -4,7 +4,7 @@ MAINTAINER liufee job@feehi.com
 
 #root用户密码
 ENV ROOT_PASSWORD=123456
-#php版本
+#php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
 ENV PHP_VER=7.1.7
 #nginx版本
 ENV NGINX_VER=1.12.0
@@ -35,7 +35,7 @@ RUN yum install openssh-server -y
 RUN echo PermitRootLogin  yes >> /etc/ssh/sshd_config\
     && echo PasswordAuthentication yes >> /etc/ssh/sshd_config\
     && echo RSAAuthentication yes >> etc/ssh/sshd_config\
-    && sed -i "129s/UseDNS yes/UseDNS no/g" /etc/ssh/sshd_config\
+    && sed -i "s/UseDNS yes/UseDNS no/" /etc/ssh/sshd_config\
     && echo "root:$ROOT_PASSWORD" | chpasswd\
     && ssh-keygen -t dsa -f /etc/ssh/ssh_host_rsa_key\
     && ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key\
@@ -55,10 +55,10 @@ RUN ./configure --prefix=/usr/local/php --with-config-file-path=/etc/php --enabl
     && cp /usr/src/php/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm && chmod +x /etc/init.d/php-fpm
 WORKDIR /usr/local/php/etc
 RUN cp php-fpm.conf.default php-fpm.conf \
-    && sed -i "/;daemonize = yes/s/;daemonize = yes/daemonize = no/g" php-fpm.conf \
+    && sed -i "s/;daemonize = yes/daemonize = no/" php-fpm.conf \
     && cp ./php-fpm.d/www.conf.default ./php-fpm.d/www.conf \
-    && sed -i "52a PATH=/usr/local/php/bin:$PATH" /etc/profile \
-    && sed -i "52a PATH=/etc/init.d:$PATH" /etc/profile
+    && sed -i "s/export PATH/PATH=\/usr\/local\/php\/bin:\$PATH\nexport PATH/" /etc/profile \
+    && sed -i "s/export PATH/PATH=\/etc\/init.d:\$PATH\nexport PATH/" /etc/profile
 
 
 #安装nginx
@@ -70,7 +70,7 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
      && useradd nginx \
      && mkdir -p -m 777 /tmp/nginx \
      && echo "#!/bin/sh" > /etc/init.d/nginx \
-     && echo "# description: Nginx web server." >> /etc/init.d/nginx \
+     && echo "#description: Nginx web server." >> /etc/init.d/nginx \
      && echo -e "case \$1 in \n\
             restart): \n\
                 /usr/local/nginx/sbin/nginx -s reload \n\
@@ -83,16 +83,10 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
                 ;; \n\
         esac \n" >> /etc/init.d/nginx \
      && chmod +x /etc/init.d/nginx \
-     && sed -i "64a         }" /etc/nginx/nginx.conf \
-     && sed -i "64a             include        fastcgi_params;" /etc/nginx/nginx.conf \
-     && sed -i "64a             fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;" /etc/nginx/nginx.conf \
-     && sed -i "64a             fastcgi_index  index.php;" /etc/nginx/nginx.conf \
-     && sed -i "64a             fastcgi_pass   127.0.0.1:9000;" /etc/nginx/nginx.conf \
-     && sed -i "64a             root           html;" /etc/nginx/nginx.conf \
-     && sed -i "64a             location ~ \.php$ {" /etc/nginx/nginx.conf \
      && sed -i "3a daemon off;" /etc/nginx/nginx.conf \
-     && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php \
-     && sed -i '46s/index  index.html index.htm;/index  index.php index.html index.htm;/g' /etc/nginx/nginx.conf
+     && sed -i "s/index  index.html index.htm;/index  index.php index.html index.htm;/" /etc/nginx/nginx.conf \
+     && sed -i "s/# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000/location ~ \.php\$ { \nfastcgi_pass 127.0.0.1:9000;\nfastcgi_index  index.php;\nfastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;\ninclude fastcgi_params;\n }/" /etc/nginx/nginx.conf \
+     && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php
 
 
 #安装mysql
@@ -115,6 +109,7 @@ RUN echo -e "#!/bin/sh \n\
         /usr/bin/mysql --connect-expired-password -e \"set password=password('\$MYSQL_PASSWORD');update mysql.user set host='%' where user='root' && host='localhost';flush privileges;\" \n\
         echo -e \"[client] \\\n  password=\"\${MYSQL_PASSWORD}\" \\\n user=root\" > ~/.my.cnf \n\
     else \n\
+        rm -rf /var/lib/mysql/mysql.sock.lock \
         /usr/sbin/mysqld \n\
     fi" > /mysql.sh
 RUN chmod +x /mysql.sh
@@ -131,10 +126,9 @@ RUN make \
     && cp ./src/redis-cli /usr/local/redis/bin/ \
     && cp ./src/redis-benchmark /usr/local/redis/bin/ \
     && cp ./redis.conf /etc/redis.conf \
-    && sed -i '61s/127.0.0.1/0.0.0.0/g' /etc/redis.conf \
-    && sed -i '128s/no/yes/g' /etc/redis.conf \
-    && sed -i "480s/# requirepass foobared/requirepass ${REDIS_PASS}/g" /etc/redis.conf \
-    && echo -e "# description: Redis web server. \n\
+    && sed -i 's/bind 127.0.0.1/bind 0.0.0.0/' /etc/redis.conf \
+    && sed -i "s/# requirepass foobared/requirepass ${REDIS_PASS}/" /etc/redis.conf \
+    && echo -e "# description: Redis server. \n\
          case \$1 in \n\
             restart): \n\
                 /usr/local/redis/bin/redis-cli -h 127.0.0.1 -p 6379 -a 123456 shutdown \n\
