@@ -42,7 +42,7 @@ P.S 如果某一步骤失败, 再来一次。(因为你懂的原因，pecl.php.n
 -------------------
 
 ```bash
-  $ docker run -h feehi -p 80:80 -p22:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v $PWD/etc/nginx:/etc/nginx -v $PWD/data/mysql:/mysql -v $PWD/data/log:/var/log -v /e:/work name/subname
+  $ docker run -h feehi -p 80:80 -p 22:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v $PWD/etc/nginx:/etc/nginx -v $PWD/data/mysql:/mysql -v $PWD/data/log:/var/log -v /e:/work name/subname
 ```
  P.S 
  

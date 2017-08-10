@@ -109,7 +109,6 @@ RUN echo -e "#!/bin/sh \n\
         /usr/bin/mysql --connect-expired-password -e \"set password=password('\$MYSQL_PASSWORD');update mysql.user set host='%' where user='root' && host='localhost';flush privileges;\" \n\
         echo -e \"[client] \\\n  password=\"\${MYSQL_PASSWORD}\" \\\n user=root\" > ~/.my.cnf \n\
     else \n\
-        rm -rf /var/lib/mysql/mysql.sock.lock \
         /usr/sbin/mysqld \n\
     fi" > /mysql.sh
 RUN chmod +x /mysql.sh
