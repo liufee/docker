@@ -46,7 +46,7 @@ RUN echo PermitRootLogin  yes >> /etc/ssh/sshd_config\
 RUN yum install epel-release -y && yum update -y\
     && yum -y install pcre pcre-devel zlib zlib-devel openssl openssl-devel libxml2 libxml2-devel libjpeg libjpeg-devel libpng libpng-devel curl curl-devel libicu libicu-devel libmcrypt  libmcrypt-devel freetype freetype-devel libmcrypt libmcrypt-devel autoconf gcc-c++
 WORKDIR /usr/src
-RUN wget -O php.tar.gz "http://php.net/get/php-${PHP_VER}.tar.gz/from/this/mirror" && mkdir php && tar -xzvf php.tar.gz -C ./php --strip-components 1
+RUN curl -o php.tar.gz http://php.net/get/php-${PHP_VER}.tar.gz/from/this/mirror -L && mkdir php && tar -xzvf php.tar.gz -C ./php --strip-components 1
 WORKDIR php
 RUN ./configure --prefix=/usr/local/php --with-config-file-path=/etc/php --enable-soap --enable-mbstring=all --enable-sockets --enable-fpm --with-gd --with-freetype-dir=/usr/include/freetype2/freetype --with-jpeg-dir=/usr/lib64 --with-zlib --with-iconv --enable-libxml --enable-xml  --enable-intl --enable-zip --enable-pcntl --enable-bcmath --enable-maintainer-zts --with-curl --with-mcrypt --with-openssl --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd \
     && make && make install \
@@ -63,7 +63,7 @@ RUN cp php-fpm.conf.default php-fpm.conf \
 
 #安装nginx
 WORKDIR /usr/src
-RUN wget -O nginx.tar.gz http://nginx.org/download/nginx-${NGINX_VER}.tar.gz -O nginx.tar.gz && mkdir nginx && tar -zxvf nginx.tar.gz -C ./nginx --strip-components 1
+RUN curl -o nginx.tar.gz http://nginx.org/download/nginx-${NGINX_VER}.tar.gz && mkdir nginx && tar -zxvf nginx.tar.gz -C ./nginx --strip-components 1
 WORKDIR nginx
 RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --user=nginx --group=nginx --with-http_ssl_module --with-http_flv_module --with-http_stub_status_module --with-http_gzip_static_module --http-client-body-temp-path=/tmp/nginx/client/ --http-proxy-temp-path=/tmp/nginx/proxy/ --http-fastcgi-temp-path=/tmp/nginx/fcgi/ --with-pcre --with-http_dav_module \
      && make && make install \
@@ -111,12 +111,12 @@ RUN echo -e "#!/bin/sh \n\
     else \n\
         /usr/sbin/mysqld \n\
     fi" > /mysql.sh
-RUN chmod +x /mysql.sh
+RUN chmod +x /mysql.sh && ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock
 
 
 #安装redis server
 WORKDIR /usr/src
-RUN wget -O redis.tar.gz http://download.redis.io/releases/redis-${REDIS_VER}.tar.gz && mkdir redis && tar -xzvf redis.tar.gz -C ./redis --strip-components 1
+RUN curl -o redis.tar.gz http://download.redis.io/releases/redis-${REDIS_VER}.tar.gz -L && mkdir redis && tar -xzvf redis.tar.gz -C ./redis --strip-components 1
 WORKDIR /usr/src/redis
 RUN make \
     && make install \
@@ -174,7 +174,9 @@ RUN echo [supervisord] > /etc/supervisord.conf \
     && echo command=/usr/sbin/crond -n >> /etc/supervisord.conf
 
 
-RUN source /etc/profile
+#服务器基础设置
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+     && echo 'Asia/Shanghai' > /etc/timezonesource /etc/profile
 
 
 EXPOSE 80 3306 6379
