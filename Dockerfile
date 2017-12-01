@@ -5,9 +5,9 @@ MAINTAINER liufee job@feehi.com
 #root用户密码
 ENV ROOT_PASSWORD=123456
 #php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
-ENV PHP_VER=7.1.7
+ENV PHP_VER=7.1.12
 #nginx版本
-ENV NGINX_VER=1.12.0
+ENV NGINX_VER=1.12.2
 #redis版本
 ENV REDIS_VER=3.2.9
 #redis密码
@@ -144,6 +144,10 @@ RUN make \
 
 #安装php redis扩展
 RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/php/php.ini
+
+
+#安装php swoole扩展
+RUN /usr/local/php/bin/pecl install swoole && echo "extension=swoole.so" >> /etc/php/php.ini
 
 
 #安装必要的服务
