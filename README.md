@@ -25,9 +25,9 @@ docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi
 
 5. crond
 
-6. phpmyadmin
+6. phpmyadmin(管理地址:http://nginx默认站点或域名/phpmyadmin)
 
-7. phpredisadmin(管理用户名为admin，密码同redis密码)
+7. phpredisadmin(管理地址::http://nginx默认站点域名或ip/phpredisadmin。管理用户名为admin，密码同redis密码)
 
 
 >docker build的时候加入--build-arg PHP_VER=php版本号 --build-arg NGINX_VER=nginx版本号 --build-arg REDIS_VER=reids版本号 --build-arg PHPMYADMIN_VER=phpmyadmin版本号 指定php，nginx，redis，phpmyadmin的安装版本。*
