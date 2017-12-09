@@ -49,7 +49,7 @@ P.S 如果某一步骤失败, 再来一次。(因为你懂的原因，pecl.php.n
 -------------------
 
 ```bash
-  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/mysql -v /path/to/docker/data/log:/var/log -v /path/to/docker/data/tools:/tools -v /e:/www liufee/feehi
+  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/mysql -v /path/to/docker/data/log:/var/log -v /path/to/docker/data/tools:/tools -v /e:/www feehi/lnmp
 ```
  P.S 
  
