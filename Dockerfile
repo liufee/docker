@@ -3,15 +3,17 @@ MAINTAINER liufee job@feehi.com
 
 
 #root用户密码
-ENV ROOT_PASSWORD=123456
+ARG ROOT_PASSWORD=123456
 #php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
-ENV PHP_VER=7.1.12
+ARG PHP_VER=7.1.12
 #nginx版本
-ENV NGINX_VER=1.12.2
+ARG NGINX_VER=1.12.2
 #redis版本
-ENV REDIS_VER=3.2.9
+ARG REDIS_VER=3.2.9
 #redis密码
-ENV REDIS_PASS=123456
+ARG REDIS_PASS=123456
+#phpmyadmin版本
+ARG PHPMYADMIN_VER=4.7.6
 
 
 #修改dns地址
@@ -94,7 +96,7 @@ RUN curl -o mysql-server.rpm https://repo.mysql.com//mysql57-community-release-e
 RUN rpm -ivh mysql-server.rpm
 RUN /usr/bin/yum install mysql-community-server -y
 VOLUME ['/mysql']
-RUN sed -i "/datadir=/s/\/var\/lib\/mysql/\/mysql/g" /etc/my.cnf && echo "user=root" >> /etc/my.cnf
+RUN sed -i "/datadir=/s/\/var\/lib\/mysql/\/mysql/g" /etc/my.cnf && sed -i "/log-error=/s/\/var\/log\/mysqld.log/\/var\/log\/mysql\/mysqld.log/g" /etc/my.cnf && echo "user=root" >> /etc/my.cnf
 RUN echo -e "#!/bin/sh \n\
     files=\`ls /mysql\` \n\
     if [ -z \"\$files\" ];then \n\
@@ -102,7 +104,7 @@ RUN echo -e "#!/bin/sh \n\
             MYSQL_PASSWORD='123456' \n\
         fi \n\
         /usr/sbin/mysqld --initialize \n\
-        MYSQLOLDPASSWORD=\`awk -F \"localhost: \" '/A temporary/{print \$2}' /var/log/mysqld.log\` \n\
+        MYSQLOLDPASSWORD=\`awk -F \"localhost: \" '/A temporary/{print \$2}' /var/log/mysql/mysqld.log\` \n\
         /usr/sbin/mysqld & \n\
         echo -e \"[client] \\\n  password=\"\${MYSQLOLDPASSWORD}\" \\\n user=root\" > ~/.my.cnf \n\
         sleep 5s \n\
@@ -150,9 +152,22 @@ RUN /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/p
 RUN /usr/local/php/bin/pecl install swoole && echo "extension=swoole.so" >> /etc/php/php.ini
 
 
+#安装phpmyadmin
+RUN cd /usr/src && curl -o phpmyadmin.tar.gz https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VER}/phpMyAdmin-${PHPMYADMIN_VER}-all-languages.tar.gz \
+    && mkdir -p /var/tools/phpmyadmin && tar -xzvf phpmyadmin.tar.gz -C /var/tools/phpmyadmin --strip-components 1
+
+
 #安装必要的服务
 RUN yum install vixie-cron crontabs -y \
-     && cd /usr/src && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer && rm -rf composer-setup.php
+     && cd /usr/src && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer && rm -rf composer-setup.php && /usr/local/php/bin/php /usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com
+
+
+#安装phpredisadmin
+RUN /usr/local/php/bin/php /usr/local/bin/composer create-project -s dev erik-dubbelboer/php-redis-admin /var/tools/phpredisadmin -vvv \
+    && cd /var/tools/phpredisadmin && cp includes/config.sample.inc.php includes/config.inc.php \
+    && sed -i "s/=> 'local server'/=> 'feehi server'/" includes/config.inc.php \
+    && sed -i "s/\/\/'auth' => 'redispasswordhere'/,'auth' => '${REDIS_PASS}'/" includes/config.inc.php \
+    && sed -i "s/'scansize' => 1000/'scansize' => 1000,\n'login' => array('admin' => array('password' => '${REDIS_PASS}')),/" includes/config.inc.php
 
 
 #配置supervisor
