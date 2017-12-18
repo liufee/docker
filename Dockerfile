@@ -196,7 +196,8 @@ RUN echo [supervisord] > /etc/supervisord.conf \
 
 #服务器基础设置
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-     && echo 'Asia/Shanghai' > /etc/timezonesource /etc/profile
+     && echo 'Asia/Shanghai' > /etc/timezonesource \
+     && source /etc/profile
 
 
 EXPOSE 80 3306 6379
