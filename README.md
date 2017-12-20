@@ -3,7 +3,7 @@ LNMP Dockerfile
 
 基于最新版CentOS官方镜像
 
-包含php，nginx，reids，oepnssh server，crond，swoole，phpmyadmin，phpredisadmin等服务。
+包含php，nginx，reids，oepnssh server，crond，swoole，phpmyadmin，phpredisadmin，xhprof等服务。
 
 快速获取容器
 ------------------------
@@ -29,6 +29,8 @@ docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi
 
 7. phpredisadmin(管理地址::http://nginx默认站点域名或ip/phpredisadmin。管理用户名为admin，密码同redis密码)
 
+8. xhprof
+
 
 >docker build的时候加入--build-arg PHP_VER=php版本号 --build-arg NGINX_VER=nginx版本号 --build-arg REDIS_VER=reids版本号 --build-arg PHPMYADMIN_VER=phpmyadmin版本号 指定php，nginx，redis，phpmyadmin的安装版本。*
 
@@ -49,13 +51,31 @@ P.S 如果某一步骤失败, 再来一次。(因为你懂的原因，pecl.php.n
 -------------------
 
 ```bash
-  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/mysql -v /path/to/docker/data/log:/var/log -v /path/to/docker/data/tools:/tools -v /e:/www feehi/lnmp
+  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/mysql -v /path/to/docker/data/log:/var/log -v /e:/www feehi/lnmp
 ```
  P.S 
  
  1. $PWD为当前运行docker run的目录，可传入绝对地址。
  
  2. 把e:/换成代码路径，或者传入多个项目的地址，修改/etc/nginx/site.d中的document_root地址
+
+
+xhprof使用方法
+-------------------
+```php
+    xhprof_enable();
+
+    //你需要分析的代码
+    
+    $xhprof_data = xhprof_disable();
+    include_once 'xhprof_lib/utils/xhprof_lib.php';//注xhprof_lib已经在/usr/local/php/lib/php中了
+    include_once 'xhprof_lib/utils/xhprof_runs.php';
+    
+    $xhprof_runs = new XHProfRuns_Default();
+    $run_id = $xhprof_runs->save_run($xhprof_data, "xhprof_test");
+    //将run_id保存起来或者随代码一起输出
+```
+然后访问:http://nginx默认站点或域名/xhpfrof_html/index.php?run=run_id&source=xhprof_test查看结果
 
 
 注意
