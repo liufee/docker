@@ -174,7 +174,11 @@ RUN /usr/local/php/bin/php /usr/local/bin/composer create-project -s dev erik-du
 #安装xhprof
 RUN git clone https://github.com/longxinH/xhprof && cd xhprof/extension && /usr/local/php/bin/phpize && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-xhprof && make && make install \
     && mkdir -p -m 777 /tmp/xhprof && echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
-    && cd ../ && cp -r xhprof_html  /var/tools/ && cp -r xhprof_lib /usr/local/php/lib/php
+    && cd ../ && cp -r xhprof_html  /var/tools/ && cp -r xhprof_lib /usr/local/php/lib/php \
+    && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/index.php \
+    && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/callgraph.php \
+    && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/typeahead.php \
+    && yum install -y graphviz
 
 
 #配置supervisor
