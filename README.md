@@ -17,7 +17,7 @@ docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi
 
 1. php7.1.2
 
-2. nginx1.12.2
+2. nginx1.12.2 (默认web根目录在/usr/local/nginx/html)
 
 3. redis3.2.9（默认密码123456）
 

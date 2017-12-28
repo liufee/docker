@@ -85,10 +85,11 @@ RUN ./configure --prefix=/usr/local/nginx --conf-path=/etc/nginx/nginx.conf --er
                 ;; \n\
         esac \n" >> /etc/init.d/nginx \
      && chmod +x /etc/init.d/nginx \
-     && sed -i "3a daemon off;" /etc/nginx/nginx.conf \
-     && sed -i "s/index  index.html index.htm;/index  index.php index.html index.htm;/" /etc/nginx/nginx.conf \
-     && sed -i "s/# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000/location ~ \.php\$ { \nfastcgi_pass 127.0.0.1:9000;\nfastcgi_index  index.php;\nfastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;\ninclude fastcgi_params;\n }/" /etc/nginx/nginx.conf \
-     && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php
+#     && sed -i "3a daemon off;" /etc/nginx/nginx.conf \
+#     && sed -i "s/index  index.html index.htm;/index  index.php index.html index.htm;/" /etc/nginx/nginx.conf \
+#     && sed -i "s/# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000/location ~ \.php\$ { \nfastcgi_pass 127.0.0.1:9000;\nfastcgi_index  index.php;\nfastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;\ninclude fastcgi_params;\n }/" /etc/nginx/nginx.conf \
+     && echo "<?php phpinfo()?>" > /usr/local/nginx/html/index.php && mkdir -m 777 -p /var/log/nginx
+ADD ./etc/nginx /etc/nginx
 
 
 #安装mysql
@@ -114,7 +115,7 @@ RUN echo -e "#!/bin/sh \n\
         rm -rf /var/lib/mysql/mysql.sock.locl \n\
         /usr/sbin/mysqld \n\
     fi" > /mysql.sh
-RUN chmod +x /mysql.sh && ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock
+RUN chmod +x /mysql.sh && ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock && mkdir -m 777 -p /var/log/mysql
 
 
 #安装redis server
@@ -192,7 +193,7 @@ RUN echo [supervisord] > /etc/supervisord.conf \
     && echo command=/etc/init.d/nginx start >> /etc/supervisord.conf \
     \
     && echo [program:php-fpm] >> /etc/supervisord.conf \
-    && echo command=/etc/init.d/php-fpm start >> /etc/supervisord.conf \
+    && echo command=/usr/local/php/sbin/php-fpm >> /etc/supervisord.conf \
     \
     && echo [program:mysqld] >> /etc/supervisord.conf \
     && echo command=/bin/sh /mysql.sh >> /etc/supervisord.conf \
