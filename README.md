@@ -46,9 +46,9 @@ LNMP Dockerfile
     
 2. 自行构建(推荐)
     ```bash
-      $ git clone https://github.com/liufee/docker.git
-      $ cd /path/to/docker
-      $ docker build -t feehi/lnmp ./
+    $ git clone https://github.com/liufee/docker.git
+    $ cd /path/to/docker
+    $ docker build -t feehi/lnmp ./
     ```
 P.S 自行构建，如果某一步骤失败, 再来一次。(因为你懂的原因，pecl.php.net,phpmyadmin.net,repo.mysql.com不稳定，造成下载某些扩展的时候失败退出。windows下使用ss代理切记勾选全局使用代理并重启cmd)
 
