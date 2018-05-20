@@ -91,19 +91,20 @@ RUN cd /usr/src \
     #php xhprof扩展
     && cd /usr/src \
     && curl -o xhprof.tar.gz https://github.com/longxinH/xhprof/archive/v${XHPROF_VER}.tar.gz \
+    && tar -xvf xhprof.tar.gz \
     && cd xhprof-${XHPROF_VER}/extension \
     && /usr/local/php/bin/phpize \
     && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-xhprof && make && make install \
     && mkdir -p -m 777 /tmp/xhprof \
     && echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
     && mkdir /var/tools \
-    && cd /usr/src/xhprof \
+    && cd /usr/src/xhprof-${XHPROF_VER} \
     && mv xhprof_html /var/tools/ \
     && mv xhprof_lib /usr/local/php/lib/php \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/index.php \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/callgraph.php \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/typeahead.php \
-    && rm -rf /usr/src/xhprof
+    && rm -rf /usr/src/xhprof-${XHPROF_VER}
 
 
 
