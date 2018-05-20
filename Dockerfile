@@ -27,6 +27,8 @@ ARG MYSQL_PID_DIR=/var/run/mysql
 ARG MYSQL_LOG_DIR=/var/log/mysql
 #mysql sock目录
 ARG MYSQL_SOCK_DIR=/var/lib/mysql
+#xhprof 版本
+ARG XHPROF_VER=2.0.0
 
 
 #映射配置文件
@@ -88,8 +90,8 @@ RUN cd /usr/src \
     && /usr/local/php/bin/pecl install swoole && echo "extension=swoole.so" >> /etc/php/php.ini \
     #php xhprof扩展
     && cd /usr/src \
-    && git clone https://github.com/longxinH/xhprof \
-    && cd xhprof/extension \
+    && curl -o xhprof.tar.gz https://github.com/longxinH/xhprof/archive/v${XHPROF_VER}.tar.gz \
+    && cd xhprof-${XHPROF_VER}/extension \
     && /usr/local/php/bin/phpize \
     && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-xhprof && make && make install \
     && mkdir -p -m 777 /tmp/xhprof \
