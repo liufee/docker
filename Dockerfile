@@ -90,7 +90,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/pecl install swoole && echo "extension=swoole.so" >> /etc/php/php.ini \
     #php xhprof扩展
     && cd /usr/src \
-    && curl -o xhprof.tar.gz https://github.com/longxinH/xhprof/archive/v${XHPROF_VER}.tar.gz \
+    && curl -o xhprof.tar.gz https://github.com/longxinH/xhprof/archive/v${XHPROF_VER}.tar.gz -L \
     && tar -xvf xhprof.tar.gz \
     && cd xhprof-${XHPROF_VER}/extension \
     && /usr/local/php/bin/phpize \
