@@ -96,7 +96,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/phpize \
     && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-xhprof && make && make install \
     && mkdir -p -m 777 /tmp/xhprof \
-    && echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
+    #&& echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
     && mkdir /var/tools \
     && cd /usr/src/xhprof-${XHPROF_VER} \
     && mv xhprof_html /var/tools/ \
