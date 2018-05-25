@@ -90,7 +90,7 @@ RUN cd /usr/src \
     #php redis扩展
     && /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/php/php.ini \
     #php swoole扩展
-    && cd /usr/src && curl -o hiredis.tar.gz https://github.com/redis/hiredis/archive/v${HIREDIS_VER}.tar.gz && mkdir hiredis && tar -xzvf hiredis.tar.gz -C ./hiredis --strip-components 1 \
+    && cd /usr/src && curl -o hiredis.tar.gz https://github.com/redis/hiredis/archive/v${HIREDIS_VER}.tar.gz -L && mkdir hiredis && tar -xzvf hiredis.tar.gz -C ./hiredis --strip-components 1 \
     && cd hiredis && make && make install && mkdir /usr/lib/hiredis && cp libhiredis.so /usr/lib/hiredis && mkdir /usr/include/hiredis && cp hiredis.h /usr/include/hiredis \
     && echo '/usr/local/lib' >> /etc/ld.so.conf && ldconfig \
     && /usr/local/php/bin/pecl download swoole-${SWOOLE_VER} && tar -zxvf swoole-${SWOOLE_VER}.tgz && cd swoole-${SWOOLE_VER} \
