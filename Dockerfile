@@ -104,7 +104,7 @@ RUN cd /usr/src \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/index.php \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/callgraph.php \
     && sed -i "s/dirname(__FILE__) . '\/..\/xhprof_lib'/'xhprof_lib'/" /var/tools/xhprof_html/typeahead.php \
-    && rm -rf /usr/src/xhprof-${XHPROF_VER}
+    && rm -rf /usr/src/xhprof-${XHPROF_VER} && rm -rf /usr/src/xhprof.tar.gz
 
 
 
@@ -152,7 +152,9 @@ RUN cd /usr/src \
     && curl -o mysql.tar.gz https://dev.mysql.com/get/Downloads/MySQL-${MYSQL_VER%.*}/mysql-boost-${MYSQL_VER}.tar.gz -L \
     && tar zxf mysql.tar.gz \
     && cd mysql-${MYSQL_VER} \
-    && cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DWITH_BOOST=./boost -DMYSQL_DATADIR=${MYSQL_DATA_DIR} -DSYSCONFDIR=/etc -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DMYSQL_UNIX_ADDR=${MYSQL_SOCK_DIR}/mysql.sock -DMYSQL_TCP_PORT=3306 -DENABLED_LOCAL_INFILE=1 -DWITH_PARTITION_STORAGE_ENGINE=1 -DEXTRA_CHARSETS=all -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci \
+    && cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DWITH_BOOST=./boost -DMYSQL_DATADIR=${MYSQL_DATA_DIR} -DSYSCONFDIR=/etc -DWITH_MYISAM_STORAGE_ENGINE=1 \
+        -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DMYSQL_UNIX_ADDR=${MYSQL_SOCK_DIR}/mysql.sock -DMYSQL_TCP_PORT=3306 \
+        -DENABLED_LOCAL_INFILE=1 -DWITH_PARTITION_STORAGE_ENGINE=1 -DEXTRA_CHARSETS=all -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_UNIT_TESTS=OFF \
     && gmake \
     && gmake install \
     && mkdir -p ${MYSQL_DATA_DIR} \
@@ -182,7 +184,9 @@ RUN cd /usr/src \
             /usr/local/mysql/bin/mysqld \n\
         fi" > /mysql.sh \
     && chmod +x /mysql.sh \
-    && rm -rf mysql.tar.gz && rm -rf mysql-${MYSQL_VER}
+    && rm -rf /usr/src/mysql.tar.gz && rm -rf /usr/src/mysql-${MYSQL_VER} && rm -rf /usr/local/mysql/mysql-test \
+    && rm -rf /usr/local/mysql/bin/mysql_client_test && rm -rf /usr/local/mysql/bin/mysql_client_test_embedded && rm -rf /usr/local/mysql/bin/mysql_embedded \
+    && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded
 
 
 #安装redis server
@@ -213,7 +217,7 @@ RUN cd /usr/src \
                 /usr/local/redis/bin/redis-server /etc/redis.conf \n\
          esac" > /etc/init.d/redis \
     && chmod +x /etc/init.d/redis \
-    && rm -rf redis.tar.gz && rm -rf redis
+    && rm -rf /usr/src/redis.tar.gz && rm -rf /usr/src/redis
 
 
 #安装必要的服务
