@@ -5,6 +5,8 @@ FROM centos:$OS_VER
 MAINTAINER liufee job@feehi.com
 
 
+#yum repo地址
+ARG YUM_REPO_URL=http://mirrors.aliyun.com/repo/Centos-7.repo
 #root用户密码
 ARG ROOT_PASSWORD=123456
 #php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
@@ -27,8 +29,12 @@ ARG MYSQL_PID_DIR=/var/run/mysql
 ARG MYSQL_LOG_DIR=/var/log/mysql
 #mysql sock目录
 ARG MYSQL_SOCK_DIR=/var/lib/mysql
-#xhprof 版本
+#xhprof版本
 ARG XHPROF_VER=2.0.0
+#hiredis版本
+ARG HIREDIS_VER=0.13.3
+#swoole版本
+ARG SWOOLE_VER=1.9.22
 
 
 #映射配置文件
@@ -36,10 +42,7 @@ ADD ./etc /usr/src/etc
 
 
 #基础环境配置
-RUN echo "nameserver 223.5.5.5" > /etc/resolv.conf \
-    && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
-    && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo \
-    && yum install vim wget git net-tools -y \
+RUN yum install vim wget git net-tools -y \
     && yum install epel-release -y \
     && yum update -y \
     && yum -y install pcre pcre-devel zlib zlib-devel openssl openssl-devel libxml2 libxml2-devel libjpeg libjpeg-devel \
@@ -87,7 +90,12 @@ RUN cd /usr/src \
     #php redis扩展
     && /usr/local/php/bin/pecl install redis && echo "extension=redis.so" >> /etc/php/php.ini \
     #php swoole扩展
-    && /usr/local/php/bin/pecl install swoole && echo "extension=swoole.so" >> /etc/php/php.ini \
+    && cd /usr/src && curl -o hiredis.tar.gz https://github.com/redis/hiredis/archive/v${HIREDIS_VER}.tar.gz && mkdir hiredis && tar -xzvf hiredis.tar.gz -C ./hiredis --strip-components 1 \
+    && cd hiredis && make && make install && mkdir /usr/lib/hiredis && cp libhiredis.so /usr/lib/hiredis && mkdir /usr/include/hiredis && cp hiredis.h /usr/include/hiredis \
+    && echo '/usr/local/lib' >> /etc/ld.so.conf && ldconfig \
+    && /usr/local/php/bin/pecl download swoole-${SWOOLE_VER} && tar -zxvf swoole-${SWOOLE_VER}.tgz && cd swoole-${SWOOLE_VER} \
+    && /usr/local/php/bin/phpize && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-openssl --enable-async-redis && make && make install \
+    && echo "extension=swoole.so" >> /etc/php/php.ini && rm -rf /usr/src/hiredis.tar.gz && rm -rf /usr/src/hiredis && rm -rf swoole-${SWOOLE_VER}.tgz && rm -rf swoole-${SWOOLE_VER} \
     #php xhprof扩展
     && cd /usr/src \
     && curl -o xhprof.tar.gz https://github.com/longxinH/xhprof/archive/v${XHPROF_VER}.tar.gz -L \
@@ -186,7 +194,7 @@ RUN cd /usr/src \
     && chmod +x /mysql.sh \
     && rm -rf /usr/src/mysql.tar.gz && rm -rf /usr/src/mysql-${MYSQL_VER} && rm -rf /usr/local/mysql/mysql-test \
     && rm -rf /usr/local/mysql/bin/mysql_client_test && rm -rf /usr/local/mysql/bin/mysql_client_test_embedded && rm -rf /usr/local/mysql/bin/mysql_embedded \
-    && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded
+    && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded && rm -rf /usr/local/mysql/lib/libmysql.a && rm -rf /usr/local/mysql
 
 
 #安装redis server
