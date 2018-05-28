@@ -5,8 +5,6 @@ FROM centos:$OS_VER
 MAINTAINER liufee job@feehi.com
 
 
-#yum repo地址
-ARG YUM_REPO_URL=http://mirrors.aliyun.com/repo/Centos-7.repo
 #root用户密码
 ARG ROOT_PASSWORD=123456
 #php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
@@ -194,7 +192,7 @@ RUN cd /usr/src \
     && chmod +x /mysql.sh \
     && rm -rf /usr/src/mysql.tar.gz && rm -rf /usr/src/mysql-${MYSQL_VER} && rm -rf /usr/local/mysql/mysql-test \
     && rm -rf /usr/local/mysql/bin/mysql_client_test && rm -rf /usr/local/mysql/bin/mysql_client_test_embedded && rm -rf /usr/local/mysql/bin/mysql_embedded \
-    && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded && rm -rf /usr/local/mysql/lib/libmysql.a && rm -rf /usr/local/mysql
+    && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded && rm -rf /usr/local/mysql/lib/libmysql.a
 
 
 #安装redis server
@@ -253,6 +251,7 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && source /etc/profile \
     &&echo [supervisord] > /etc/supervisord.conf \
     && echo nodaemon=true >> /etc/supervisord.conf \
+    && echo user=root >> /etc/supervisord.conf \
     \
     && echo [program:sshd] >> /etc/supervisord.conf \
     && echo command=/usr/sbin/sshd -D >> /etc/supervisord.conf \
