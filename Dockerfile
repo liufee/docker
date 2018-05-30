@@ -28,7 +28,7 @@ ARG MYSQL_LOG_DIR=/var/log/mysql
 #mysql sock目录
 ARG MYSQL_SOCK_DIR=/var/lib/mysql
 #xhprof版本
-ARG XHPROF_VER=2.0.0
+ARG XHPROF_VER=1.2
 #hiredis版本
 ARG HIREDIS_VER=0.13.3
 #swoole版本
@@ -102,7 +102,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/phpize \
     && ./configure --with-php-config=/usr/local/php/bin/php-config --enable-xhprof && make && make install \
     && mkdir -p -m 777 /tmp/xhprof \
-    #&& echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
+    && echo -e "[xhprof]\nextension = xhprof.so\nxhprof.output_dir = /tmp/xhprof" >> /etc/php/php.ini \
     && mkdir /var/tools \
     && cd /usr/src/xhprof-${XHPROF_VER} \
     && mv xhprof_html /var/tools/ \
