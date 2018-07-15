@@ -33,6 +33,8 @@ ARG XHPROF_VER=1.2
 ARG HIREDIS_VER=0.13.3
 #swoole版本
 ARG SWOOLE_VER=1.9.22
+#go版本
+ARG GO_VER=1.10.3
 
 
 #映射配置文件
@@ -224,6 +226,16 @@ RUN cd /usr/src \
          esac" > /etc/init.d/redis \
     && chmod +x /etc/init.d/redis \
     && rm -rf /usr/src/redis.tar.gz && rm -rf /usr/src/redis
+
+
+#安装go
+RUN cd /usr/src \
+    && curl -o go.tar.gz https://studygolang.com/dl/golang/go${GO_VER}.linux-amd64.tar.gz -L \
+    && mkdir /usr/local/go \
+    && tar -xzvf go.tar.gz -C /usr/local/go  --strip-components 1 \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/go\/bin:\$PATH\nGOPATH=\$HOME\/go\nexport PATH/" /etc/profile \
+    && sed -i 's/export PATH USER/export PATH USER GOPATH/' /etc/redis.conf \
+    && rm -rf go.tar.gz
 
 
 #安装必要的服务

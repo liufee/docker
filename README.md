@@ -26,6 +26,8 @@ LNMP Dockerfile
 
 - [x] xhprof
 
+- [x] go语言 (GOPATH环境变量已设置为$HOME/go，映射到此文件夹即可)
+
 
 >docker build的时候加入
     --build-arg PHP_VER=php版本号 
@@ -34,6 +36,7 @@ LNMP Dockerfile
     --build-arg PHPMYADMIN_VER=phpmyadmin版本号
     --build-arg REDIS_VER=redis密码(phpredisadmin同此)
     --build-arg ROOT_PASSWORD=ssh的root密码
+    --build-arg GO_VER=go语言版本
 可以指定php，nginx，redis，phpmyadmin的安装版本,redis(phpredisadmin)和ssh的密码
 
 
