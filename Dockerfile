@@ -8,9 +8,9 @@ MAINTAINER liufee job@feehi.com
 #root用户密码
 ARG ROOT_PASSWORD=123456
 #php版本,因为php版本间配置文件模板不相同，此处的版本号只能为大于7.0以上版本
-ARG PHP_VER=7.1.12
+ARG PHP_VER=7.2.8
 #nginx版本
-ARG NGINX_VER=1.12.2
+ARG NGINX_VER=1.15.2
 #mysql版本
 ARG MYSQL_VER=5.7.21
 #redis版本
@@ -32,7 +32,7 @@ ARG XHPROF_VER=1.2
 #hiredis版本
 ARG HIREDIS_VER=0.13.3
 #swoole版本
-ARG SWOOLE_VER=1.9.22
+ARG SWOOLE_VER=4.0.4
 #go版本
 ARG GO_VER=1.10.3
 
@@ -247,7 +247,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/php /usr/local/bin/composer create-project -s dev erik-dubbelboer/php-redis-admin /var/tools/phpredisadmin -vvv \
     && cd /var/tools/phpredisadmin && cp includes/config.sample.inc.php includes/config.inc.php \
     && sed -i "s/=> 'local server'/=> 'feehi server'/" includes/config.inc.php \
-    && sed -i "s/\/\/'auth' => 'redispasswordhere'/,'auth' => '${REDIS_PASS}'/" includes/config.inc.php \
+    && sed -i "s/\/\/'auth' => 'redispasswordhere'/'auth' => '${REDIS_PASS}'/" includes/config.inc.php \
     && sed -i "s/'scansize' => 1000/'scansize' => 1000,\n'login' => array('admin' => array('password' => '${REDIS_PASS}')),/" includes/config.inc.php \
     && rm -rf /root/.composer/cache/ \
     && cd /usr/src \
