@@ -12,9 +12,9 @@ ARG PHP_VER=7.2.8
 #nginx版本
 ARG NGINX_VER=1.15.2
 #mysql版本
-ARG MYSQL_VER=5.7.21
+ARG MYSQL_VER=5.7.23
 #redis版本
-ARG REDIS_VER=3.2.9
+ARG REDIS_VER=4.0.11
 #redis密码
 ARG REDIS_PASS=123456
 #phpmyadmin版本
@@ -35,6 +35,12 @@ ARG HIREDIS_VER=0.13.3
 ARG SWOOLE_VER=4.0.4
 #go版本
 ARG GO_VER=1.10.3
+#node.js版本
+ARG NODE_VER=8.11.4
+#mongodb版本
+ARG MONGODB_VER=4.0.1
+#mongodb data目录
+ARG MONGODB_DATA_DIR=/data/mongodb
 
 
 #映射配置文件
@@ -78,6 +84,9 @@ RUN cd /usr/src \
     && make install \
     && mkdir /etc/php \
     && cp /usr/src/php/php.ini-development /etc/php/php.ini \
+    && echo $MYSQL_SOCK_DIR > /tmp/temp_mysql_sock_dir.txt && temp_mysql_sock_dir=$(sed "s/\//\\\\\//g" /tmp/temp_mysql_sock_dir.txt) && rm -rf /tmp/temp_mysql_sock_dir.txt \
+    && sed -i "s/mysqli.default_socket = /mysqli.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
+    && sed -i "s/pdo_mysql.default_socket = /pdo_mysql.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
     && cp /usr/src/php/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm \
     && chmod +x /etc/init.d/php-fpm \
     && cd /usr/local/php/etc \
@@ -192,6 +201,7 @@ RUN cd /usr/src \
             /usr/local/mysql/bin/mysqld \n\
         fi" > /mysql.sh \
     && chmod +x /mysql.sh \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/mysql\/bin:\$PATH\nexport PATH/" /etc/profile \
     && rm -rf /usr/src/mysql.tar.gz && rm -rf /usr/src/mysql-${MYSQL_VER} && rm -rf /usr/local/mysql/mysql-test \
     && rm -rf /usr/local/mysql/bin/mysql_client_test && rm -rf /usr/local/mysql/bin/mysql_client_test_embedded && rm -rf /usr/local/mysql/bin/mysql_embedded \
     && rm -rf /usr/local/mysql/bin/mysqltest && rm -rf /usr/local/mysql/bin/mysqltest_embedded && rm -rf /usr/local/mysql/lib/libmysql.a
@@ -225,6 +235,7 @@ RUN cd /usr/src \
                 /usr/local/redis/bin/redis-server /etc/redis.conf \n\
          esac" > /etc/init.d/redis \
     && chmod +x /etc/init.d/redis \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/redis\/bin:\$PATH\nexport PATH/" /etc/profile \
     && rm -rf /usr/src/redis.tar.gz && rm -rf /usr/src/redis
 
 
@@ -233,9 +244,24 @@ RUN cd /usr/src \
     && curl -o go.tar.gz https://studygolang.com/dl/golang/go${GO_VER}.linux-amd64.tar.gz -L \
     && mkdir /usr/local/go \
     && tar -xzvf go.tar.gz -C /usr/local/go  --strip-components 1 \
-    && sed -i "s/export PATH/PATH=\/usr\/local\/go\/bin:\$PATH\nGOPATH=\$HOME\/go\nexport PATH/" /etc/profile \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/go\/bin:\$HOME\/go\/bin:\$PATH\nGOPATH=\$HOME\/go\nexport PATH/" /etc/profile \
     && sed -i 's/export PATH USER/export PATH USER GOPATH/' /etc/redis.conf \
     && rm -rf go.tar.gz
+
+
+#安装node.js
+RUN curl -o node.tar.xz https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz && tar -xvf node.tar.xz \
+    && mv node-v${NODE_VER}-linux-x64 /usr/local/node \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/node\/bin:\$PATH\nexport PATH/" /etc/profile \
+    && rm -rf node.tar.gz
+
+
+#安装mongodb
+RUN curl -o mongodb.tar.gz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VER}.tgz && tar -xvf mongodb.tar.gz \
+    && mkdir -p ${MONGODB_DATA_DIR} && mv mongodb-linux-x86_64-${MONGODB_VER} /usr/local/mongodb \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/mongodb\/bin:\$PATH\nexport PATH/" /etc/profile  \
+    && echo -e "fork=false\njournal=true\nquiet=false\nlogpath=/var/log/mongodb/mongodb.log\nlogappend=true\nport=27017\ndbpath=${MONGODB_DATA}\nbind_ip=0.0.0.0" > /etc/mongod.conf \
+    && rm -rf mongodb.tar.gz
 
 
 #安装必要的服务
@@ -280,11 +306,14 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo [program:redis] >> /etc/supervisord.conf \
     && echo command=/usr/local/redis/bin/redis-server /etc/redis.conf >> /etc/supervisord.conf \
     \
+    && echo [program:mongodb] >> /etc/supervisord.conf \
+    && echo command=/usr/local/mongodb/bin/mongod -f /etc/mongod.conf >> /etc/supervisord.conf \
+    \
     && echo [program:crond] >> /etc/supervisord.conf \
     && echo command=/usr/sbin/crond -n >> /etc/supervisord.conf
 
 
-EXPOSE 80 3306 6379
+EXPOSE 80 3306 6379 27017
 
 
 CMD ["/usr/bin/supervisord"]
