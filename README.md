@@ -75,7 +75,7 @@ LNMP Dockerfile
 -------------------
 
 ```bash
-  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/data/mysql -v /path/to/docker/data/log:/var/log -v /path/to/www:/usr/local/nginx/html liufee/feehi
+  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 -p 27017:27017 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/data/mysql -v /path/to/docker/data/log:/var/log -v /path/to/www:/usr/local/nginx/html liufee/feehi
 ```
  P.S 
  
