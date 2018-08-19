@@ -85,8 +85,8 @@ RUN cd /usr/src \
     && mkdir /etc/php \
     && cp /usr/src/php/php.ini-development /etc/php/php.ini \
     && echo $MYSQL_SOCK_DIR > /tmp/temp_mysql_sock_dir.txt && temp_mysql_sock_dir=$(sed "s/\//\\\\\//g" /tmp/temp_mysql_sock_dir.txt) && rm -rf /tmp/temp_mysql_sock_dir.txt \
-    && sed -i "s/mysqli.default_socket = /mysqli.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
-    && sed -i "s/pdo_mysql.default_socket = /pdo_mysql.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
+    && sed -i "s/mysqli.default_socket =/mysqli.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
+    && sed -i "s/pdo_mysql.default_socket=/pdo_mysql.default_socket = ${temp_mysql_sock_dir}\/mysql.sock/" /etc/php/php.ini \
     && cp /usr/src/php/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm \
     && chmod +x /etc/init.d/php-fpm \
     && cd /usr/local/php/etc \
@@ -260,6 +260,7 @@ RUN curl -o node.tar.xz https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-l
 RUN curl -o mongodb.tar.gz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VER}.tgz && tar -xvf mongodb.tar.gz \
     && mkdir -p ${MONGODB_DATA_DIR} && mv mongodb-linux-x86_64-${MONGODB_VER} /usr/local/mongodb \
     && sed -i "s/export PATH/PATH=\/usr\/local\/mongodb\/bin:\$PATH\nexport PATH/" /etc/profile  \
+    && mkdir -p /var/log/mongodb \
     && echo -e "fork=false\njournal=true\nquiet=false\nlogpath=/var/log/mongodb/mongodb.log\nlogappend=true\nport=27017\ndbpath=${MONGODB_DATA}\nbind_ip=0.0.0.0" > /etc/mongod.conf \
     && rm -rf mongodb.tar.gz
 
