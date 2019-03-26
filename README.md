@@ -3,7 +3,7 @@ LNMP Dockerfile
 
 基于最新版CentOS官方镜像
 
-包含php, nginx, mysql, reids, openssh server, go, crond, swoole, mongodb, node.js, phpmyadmin, phpredisadmin, xhprof等服务。
+包含php, java, nginx, mysql, reids, openssh server, go, crond, swoole, mongodb, node.js, phpmyadmin, phpredisadmin, xhprof, maven等服务。
 
 
 简介
@@ -11,6 +11,8 @@ LNMP Dockerfile
 默认包含的版本
 
 - [x] php (默认7.2.8)
+
+- [x] java (默认1.8,当前仅支持1.8)
 
 - [x] nginx (默认1.15.2版本,默认web根目录在/usr/local/nginx/html)
 
@@ -34,9 +36,12 @@ LNMP Dockerfile
 
 - [x] mongodb (默认4.0.1)
 
+- [x] maven (默认3.6.0)
+
 
 >docker build的时候加入
     --build-arg PHP_VER=php版本号 
+    --build-arg JKD_VER=jdk版本号 
     --build-arg NGINX_VER=nginx版本号 
     --build-arg MYSQL_VER=mysql版本号 
     --build-arg REDIS_VER=reids版本号
@@ -46,7 +51,8 @@ LNMP Dockerfile
     --build-arg GO_VER=go语言版本
     --build-arg NODE_VER=node.js语言版本
     --build-arg MONGODB_VER=mongodb版本
-可以指定php，nginx，redis，phpmyadmin的安装版本,redis(phpredisadmin)和ssh的密码
+    --build-arg MAVEN_VER=maven版本
+可以指定php，nginx，redis，phpmyadmin的安装版本, redis(phpredisadmin)和ssh的密码
 
 
 获取镜像

@@ -41,6 +41,10 @@ ARG NODE_VER=8.11.4
 ARG MONGODB_VER=4.0.1
 #mongodb data目录
 ARG MONGODB_DATA_DIR=/data/mongodb
+#java版本
+ARG JDK_VER=1.8
+#maven版本
+ARG MAVEN_VER=3.6.0
 
 
 #映射配置文件
@@ -265,6 +269,22 @@ RUN curl -o mongodb.tar.gz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64
     && rm -rf mongodb.tar.gz
 
 
+#安装Java JDK
+RUN mkdir jdk && cd jdk \
+    && curl -o jdk.tar.gz http://d.feehi.com/jdk-${JDK_VER} -L \
+    && mkdir -p /usr/local/java && tar -xzvf jdk.tar.gz -C /usr/local/java --strip-components 1 \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/java\/bin:\$PATH\nJAVA_HOME=\/usr\/local\/java\nJRE_HOME=\/usr\/local\/java\/jre\nCLASSPATH=\.:\$JAVA_HOME\/lib:\/\$JRE_HOME\/lib:\$CLASSPATH\nexport PATH GOPATH JAVA_HOME JRE_HOME CLASSPATH/" /etc/profile \
+    && rm -rf ../jdk
+
+
+#安装maven
+RUN cd /usr/src && curl -o maven.tar.gz http://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/${MAVEN_VER}/binaries/apache-maven-${MAVEN_VER}-bin.tar.gz -L \
+    && tar -xvf maven.tar.gz && mv apache-maven-${MAVEN_VER} /usr/local/maven \
+    && sed -i "s/<mirrors>/<mirrors><mirror><id>nexus-aliyun<\/id><mirrorOf>central<\/mirrorOf><name>Nexus aliyun<\/name><url>http:\/\/maven.aliyun.com\/nexus\/content\/groups\/public<\/url><\/mirror>/" /usr/local/maven/conf/settings.xml \
+    && sed -i "s/export PATH/MAVEN_HOME=\/usr\/local\/maven \nexport MAVEN_HOME\nPATH=\/usr\/local\/maven\/bin:\$PATH\nexport PATH/" /etc/profile \
+    && rm -rf maven.tar.gz
+
+
 #安装必要的服务
 RUN cd /usr/src \
     && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -282,6 +302,15 @@ RUN cd /usr/src \
     && mkdir -p /var/tools/phpmyadmin \
     && tar -xzvf phpmyadmin.tar.gz -C /var/tools/phpmyadmin --strip-components 1 \
     && rm -rf /usr/src/phpmyadmin.tar.gz
+
+
+#环境变量设置
+ENV PATH /usr/local/php/bin:/etc/init.d:/usr/local/mysql/bin:/usr/local/redis/bin:/usr/local/go/bin:/root/go/bin:/usr/local/node/bin:/usr/local/mongodb/bin:usr/local/java/bin:/usr/local/maven/bin:$PATH
+ENV GOPATH /root/go
+ENV JAVA_HOME /usr/local/java
+ENV JRE_HOME /usr/local/java/jre
+ENV CLASSPATH .:$JAVA_HOME/lib:/$JRE_HOME/lib:$CLASSPATH
+ENV MAVEN_HOME /usr/local/maven
 
 
 #服务器基础设置
