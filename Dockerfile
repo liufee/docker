@@ -248,7 +248,7 @@ RUN cd /usr/src \
     && curl -o go.tar.gz https://studygolang.com/dl/golang/go${GO_VER}.linux-amd64.tar.gz -L \
     && mkdir /usr/local/go \
     && tar -xzvf go.tar.gz -C /usr/local/go  --strip-components 1 \
-    && sed -i "s/export PATH/PATH=\/usr\/local\/go\/bin:\$HOME\/go\/bin:\$PATH\nGOPATH=\$HOME\/go\nexport PATH/" /etc/profile \
+    && sed -i "s/export PATH/PATH=\/usr\/local\/go\/bin:\$HOME\/go\/bin:\$PATH\nGOPATH=\$HOME\/go\nexport GOPATH\nexport PATH/" /etc/profile \
     && sed -i 's/export PATH USER/export PATH USER GOPATH/' /etc/redis.conf \
     && rm -rf go.tar.gz
 
@@ -270,11 +270,11 @@ RUN curl -o mongodb.tar.gz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64
 
 
 #安装Java JDK
-RUN mkdir jdk && cd jdk \
+RUN cd /usr/src \
     && curl -o jdk.tar.gz http://d.feehi.com/jdk-${JDK_VER} -L \
     && mkdir -p /usr/local/java && tar -xzvf jdk.tar.gz -C /usr/local/java --strip-components 1 \
-    && sed -i "s/export PATH/PATH=\/usr\/local\/java\/bin:\$PATH\nJAVA_HOME=\/usr\/local\/java\nJRE_HOME=\/usr\/local\/java\/jre\nCLASSPATH=\.:\$JAVA_HOME\/lib:\/\$JRE_HOME\/lib:\$CLASSPATH\nexport PATH GOPATH JAVA_HOME JRE_HOME CLASSPATH/" /etc/profile \
-    && rm -rf ../jdk
+    && sed -i "s/export PATH/PATH=\/usr\/local\/java\/bin:\$PATH\nJAVA_HOME=\/usr\/local\/java\nJRE_HOME=\/usr\/local\/java\/jre\nCLASSPATH=\.:\$JAVA_HOME\/lib:\$JRE_HOME\/lib\nexport JAVA_HOME JRE_HOME CLASSPATH\nexport PATH/" /etc/profile \
+    && rm -rf jdk.tar.gz
 
 
 #安装maven
@@ -290,7 +290,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer \
     && rm -rf composer-setup.php \
-    && /usr/local/php/bin/php /usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com \
+    && /usr/local/php/bin/php /usr/local/bin/composer config -g repo.packagist composer https://packagist.laravel-china.org \
     && /usr/local/php/bin/php /usr/local/bin/composer create-project -s dev erik-dubbelboer/php-redis-admin /var/tools/phpredisadmin -vvv \
     && cd /var/tools/phpredisadmin && cp includes/config.sample.inc.php includes/config.inc.php \
     && sed -i "s/=> 'local server'/=> 'feehi server'/" includes/config.inc.php \
