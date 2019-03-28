@@ -257,6 +257,7 @@ RUN cd /usr/src \
 RUN curl -o node.tar.xz https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz && tar -xvf node.tar.xz \
     && mv node-v${NODE_VER}-linux-x64 /usr/local/node \
     && sed -i "s/export PATH/PATH=\/usr\/local\/node\/bin:\$PATH\nexport PATH/" /etc/profile \
+    && source /etc/profile && /usr/local/node/bin/npm install -g cnpm --registry=https://registry.npm.taobao.org \
     && rm -rf node.tar.gz
 
 
