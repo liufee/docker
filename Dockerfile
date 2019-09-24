@@ -34,9 +34,9 @@ ARG HIREDIS_VER=0.13.3
 #swoole版本
 ARG SWOOLE_VER=4.0.4
 #go版本
-ARG GO_VER=1.10.3
+ARG GO_VER=1.13
 #node.js版本
-ARG NODE_VER=8.11.4
+ARG NODE_VER=10.16.3
 #mongodb版本
 ARG MONGODB_VER=4.0.1
 #mongodb data目录
@@ -44,7 +44,7 @@ ARG MONGODB_DATA_DIR=/data/mongodb
 #java版本
 ARG JDK_VER=1.8
 #maven版本
-ARG MAVEN_VER=3.6.0
+ARG MAVEN_VER=3.6.2
 
 
 #映射配置文件
@@ -291,7 +291,7 @@ RUN cd /usr/src \
     && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer \
     && rm -rf composer-setup.php \
-    && /usr/local/php/bin/php /usr/local/bin/composer config -g repo.packagist composer https://packagist.laravel-china.org \
+    && /usr/local/php/bin/php /usr/local/bin/composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/ \
     && /usr/local/php/bin/php /usr/local/bin/composer create-project -s dev erik-dubbelboer/php-redis-admin /var/tools/phpredisadmin -vvv \
     && cd /var/tools/phpredisadmin && cp includes/config.sample.inc.php includes/config.inc.php \
     && sed -i "s/=> 'local server'/=> 'feehi server'/" includes/config.inc.php \

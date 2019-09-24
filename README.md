@@ -30,13 +30,13 @@ LNMP Dockerfile
 
 - [x] xhprof
 
-- [x] go语言 (默认1.10.3 GOPATH环境变量已设置为$HOME/go，映射到此文件夹即可)
+- [x] go语言 (默认1.13 GOPATH环境变量已设置为$HOME/go,映射到此文件夹即可。1.11版本后开启vgo映射任何目录均可)
 
-- [x] node.js (默认8.11.4)
+- [x] node.js (默认10.16.3)
 
 - [x] mongodb (默认4.0.1)
 
-- [x] maven (默认3.6.0)
+- [x] maven (默认3.6.2)
 
 
 >docker build的时候加入
