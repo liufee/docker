@@ -270,23 +270,20 @@ RUN curl -o mongodb.tar.gz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64
     && rm -rf mongodb.tar.gz
 
 
-#安装Java JDK
+#安装Java和maven
 RUN cd /usr/src \
     && curl -o jdk.tar.gz http://d.feehi.com/jdk-${JDK_VER} -L \
     && mkdir -p /usr/local/java && tar -xzvf jdk.tar.gz -C /usr/local/java --strip-components 1 \
     && sed -i "s/export PATH/PATH=\/usr\/local\/java\/bin:\$PATH\nJAVA_HOME=\/usr\/local\/java\nJRE_HOME=\/usr\/local\/java\/jre\nCLASSPATH=\.:\$JAVA_HOME\/lib:\$JRE_HOME\/lib\nexport JAVA_HOME JRE_HOME CLASSPATH\nexport PATH/" /etc/profile \
-    && rm -rf jdk.tar.gz
-
-
-#安装maven
-RUN cd /usr/src && curl -o maven.tar.gz http://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/${MAVEN_VER}/binaries/apache-maven-${MAVEN_VER}-bin.tar.gz -L \
+    && rm -rf jdk.tar.gz \
+    && cd /usr/src && curl -o maven.tar.gz http://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/${MAVEN_VER}/binaries/apache-maven-${MAVEN_VER}-bin.tar.gz -L \
     && tar -xvf maven.tar.gz && mv apache-maven-${MAVEN_VER} /usr/local/maven \
     && sed -i "s/<mirrors>/<mirrors><mirror><id>nexus-aliyun<\/id><mirrorOf>central<\/mirrorOf><name>Nexus aliyun<\/name><url>http:\/\/maven.aliyun.com\/nexus\/content\/groups\/public<\/url><\/mirror>/" /usr/local/maven/conf/settings.xml \
     && sed -i "s/export PATH/MAVEN_HOME=\/usr\/local\/maven \nexport MAVEN_HOME\nPATH=\/usr\/local\/maven\/bin:\$PATH\nexport PATH/" /etc/profile \
     && rm -rf maven.tar.gz
 
 
-#安装必要的服务
+#安装辅助工具 phpmyadmin phpredisadmin adminMogno
 RUN cd /usr/src \
     && /usr/local/php/bin/php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && /usr/local/php/bin/php composer-setup.php  --install-dir=/usr/local/bin --filename=composer \
@@ -302,7 +299,28 @@ RUN cd /usr/src \
     && curl -o phpmyadmin.tar.gz https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VER}/phpMyAdmin-${PHPMYADMIN_VER}-all-languages.tar.gz \
     && mkdir -p /var/tools/phpmyadmin \
     && tar -xzvf phpmyadmin.tar.gz -C /var/tools/phpmyadmin --strip-components 1 \
-    && rm -rf /usr/src/phpmyadmin.tar.gz
+    && rm -rf /usr/src/phpmyadmin.tar.gz \
+    && cd /var/tools && git clone https://github.com/mrvautin/adminMongo.git && cd /var/tools/adminMongo \
+    && export PATH=PATH:/usr/local/node/bin \
+    && cnpm install --ignore-scripts \
+    && echo -e "{ \n\
+                \"app\": { \n\
+                    \"host\": \"0.0.0.0\", \n\
+                    \"port\": 8882, \n\
+                    \"docs_per_page\": 15, \n\
+                    \"locale\": \"zh-cn\", \n\
+                    \"context\": \"adminMongo\", \n\
+                    \"monitoring\": true \n\
+                } \n\
+            }" > /var/tools/adminMongo/config/app.json \
+    && echo -e "{ \n\
+          \"connections\": { \n\
+            \"feehi\": { \n\
+              \"connection_string\": \"mongodb://127.0.1:27017\", \n\
+              \"connection_options\": {} \n\
+             } \n\
+            } \n\
+          }" > /var/tools/adminMongo/config/config.json
 
 
 #环境变量设置
@@ -341,7 +359,11 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo command=/usr/local/mongodb/bin/mongod -f /etc/mongod.conf >> /etc/supervisord.conf \
     \
     && echo [program:crond] >> /etc/supervisord.conf \
-    && echo command=/usr/sbin/crond -n >> /etc/supervisord.conf
+    && echo command=/usr/sbin/crond -n >> /etc/supervisord.conf \
+
+    && echo [program:adminMongo] >> /etc/supervisord.conf \
+    && echo directory=/var/tools/adminMongo >> /etc/supervisord.conf  \
+    && echo command=/usr/local/node/bin/npm start >> /etc/supervisord.conf
 
 
 EXPOSE 80 3306 6379 27017

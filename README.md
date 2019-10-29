@@ -3,7 +3,7 @@ LNMP Dockerfile
 
 基于最新版CentOS官方镜像
 
-包含php, java, nginx, mysql, reids, openssh server, go, crond, swoole, mongodb, node.js, phpmyadmin, phpredisadmin, xhprof, maven等服务。
+包含php, java, nginx, mysql, reids, openssh server, go, crond, swoole, mongodb, adminMongo, node.js, phpmyadmin, phpredisadmin, xhprof, maven等服务。
 
 
 简介
@@ -24,7 +24,7 @@ LNMP Dockerfile
 
 - [x] crond
 
-- [x] phpmyadmin (默认版本4.7.6, 管理地址:http://nginx默认站点或域名/phpmyadmin)
+- [x] phpmyadmin (默认版本4.7.6, 管理地址: http://nginx默认站点或域名/phpmyadmin)
 
 - [x] phpredisadmin (管理地址::http://nginx默认站点域名或ip/phpredisadmin。管理用户名为admin，密码同redis密码)
 
@@ -35,6 +35,8 @@ LNMP Dockerfile
 - [x] node.js (默认10.16.3)
 
 - [x] mongodb (默认4.0.1)
+
+- [x] adminMongo (管理地址: http://nginx默认站点域名或ip/adminMongo。默认没有密码，且设置为中文)
 
 - [x] maven (默认3.6.2)
 
@@ -59,10 +61,11 @@ LNMP Dockerfile
 ------------------------
 1. 远程获取镜像(推荐)
     ```bash 
-    $ docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi 
     $ git clone https://github.com/liufee/docker.git
     $ cd /path/to/docker
+    $ docker pull registry.cn-hangzhou.aliyuncs.com/liufee/feehi 
     ```
+   P.S虽然通过远程获取仓库获取镜像，但是还是建议clone本仓库到本地，因为docker run容器时-v挂载目录把配置文件映射进去
     
 2. 自行构建
     ```bash
@@ -81,7 +84,7 @@ LNMP Dockerfile
 -------------------
 
 ```bash
-  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 -p 27017:27017 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/data/mysql -v /path/to/docker/data/mongodb:/data/mongodb -v /path/to/docker/data/log:/var/log -v /path/to/www:/usr/local/nginx/html liufee/feehi
+  $ docker run -h feehi -p 80:80 -p 23:22 -p 3306:3306 -p 6379:6379 -p 27017:27017 --name feehi -itd -v /path/to/docker/etc/nginx:/etc/nginx -v /path/to/docker/data/mysql:/data/mysql -v /path/to/docker/data/mongodb:/data/mongodb -v /path/to/docker/data/log:/var/log -v /path/to/default-nginx-website:/usr/local/nginx/html -v /your-work-directory:/your-work-directory liufee/feehi
 ```
  P.S 
  
